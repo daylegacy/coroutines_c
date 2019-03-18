@@ -178,7 +178,7 @@ int main(int argc, char const *argv[]) {
 		for(int i=0;i<len;i++){
 				printf("coro%d time = %llu, switch_n = %llu\n", i, contexts_times[i]/1000, switch_cont_n[i]);
 		}
-		fp = fopen("res.txt", "w");
+		fp = fopen("result.txt", "w");
 		merge(list_of_arr, len, fp);
 		fclose(fp);
 		for(int i=0;i<len;i++){
