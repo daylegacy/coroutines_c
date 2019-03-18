@@ -1,7 +1,7 @@
 //#define _XOPEN_SOURCE /* Mac compatibility. */
 //#define _POSIX_C_SOURCE>=199309L
 //gcc main.c -std=gnu11 -o a.out
-//./a.out 0.01 test11.txt test22.txt test33.txt
+//./a.out 0.001 test11.txt test22.txt test33.txt
 #include <ucontext.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <time.h>
 
-#define STACK_SIZE 1024*1024*4
+#define STACK_SIZE 1024*1024*4p
 #define switch_core() \
 	do { \
 		clock_gettime(CLOCK_REALTIME, &t_end); \
@@ -31,7 +31,6 @@
 }while(0)
 #define switch_core_nt() \
 	do { \
-		clock_gettime(CLOCK_REALTIME, &t_end); \
 		save = c_i; \
 		if(c_i+1<c_s){ \
 			c_i++; \
@@ -39,7 +38,6 @@
 		else{ \
 			c_i=0; \
 			swapcontext(&contexts[save], &contexts[0]);} \
-		clock_gettime(CLOCK_REALTIME, &t_start); \
 		c_i = save; \
 }while(0)
 #define handle_error(msg) \
