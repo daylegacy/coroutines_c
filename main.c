@@ -81,12 +81,15 @@ void sort(int * ptr, int len, int orgn_len) {
 	int temp;switch_core();
 	pivot =  ptr[len / 2];switch_core();
 	if (len < 2) {switch_core();
-		if(len == orgn_len){switch_core();
-			c_ret_n++;switch_core();
-			while(c_ret_n<c_s){
-				switch_core();
+		if(len == orgn_len){
+			c_ret_n++;
+			if(c_ret_n==c_s){
+				swapcontext(&contexts[c_i], &main_context);
 			}
-		}switch_core();
+			while(c_ret_n<c_s){
+				switch_core_nt();
+			}
+		}
 		return;
 	}
 	for (i=0, j=len-1; ;i++,j--) {switch_core();
