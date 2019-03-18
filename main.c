@@ -29,6 +29,19 @@
 		clock_gettime(CLOCK_REALTIME, &t_start); \
 		c_i = save; \
 }while(0)
+#define switch_core_nt() \
+	do { \
+		clock_gettime(CLOCK_REALTIME, &t_end); \
+		save = c_i; \
+		if(c_i+1<c_s){ \
+			c_i++; \
+			swapcontext(&contexts[save], &contexts[c_i]);} \
+		else{ \
+			c_i=0; \
+			swapcontext(&contexts[save], &contexts[0]);} \
+		clock_gettime(CLOCK_REALTIME, &t_start); \
+		c_i = save; \
+}while(0)
 #define handle_error(msg) \
    do { perror(msg); exit(EXIT_FAILURE); } while (0)
 typedef struct arr{
@@ -93,12 +106,12 @@ void sort(int * ptr, int len, int orgn_len) {
 	switch_core();
 
 	if(len == orgn_len){
-		c_ret_n++;switch_core();
+		c_ret_n++;
 		if(c_ret_n==c_s){
 			swapcontext(&contexts[c_i], &main_context);
 		}
 		while(c_ret_n<c_s){
-			switch_core();
+			switch_core_nt();
 		}
 	}
 }
@@ -123,7 +136,9 @@ int main(int argc, char const *argv[]) {
 
 
 	if(argc<3){
+
 		printf("Usage :./f filename ...\n");
+		return 0;
 	}
 	arr *list_of_arr=malloc(len*sizeof(arr));
 	contexts=malloc(len*sizeof(ucontext_t));
