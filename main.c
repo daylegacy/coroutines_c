@@ -188,7 +188,7 @@ int main(int argc, char const *argv[]) {
 	}
 	gettimeofday(&t_end, 0);
 	for(int i=0;i<len;i++){
-		printf("coro%d time = %llu, switch_n = %llu\n", i, contexts_times[i]/1000, switch_cont_n[i]);
+		printf("coro%d time = %12llu, switch_n = %llu\n", i, contexts_times[i]/1000, switch_cont_n[i]);
 	}
 	fp = fopen("result.txt", "w");
 	merge(list_of_arr, len, fp);
@@ -202,7 +202,7 @@ int main(int argc, char const *argv[]) {
 	free(contexts_times);
 	free(switch_cont_n);
 	free(coroutine_finished);
-	printf("Elapsed =    %lld\n", (t_end.tv_sec-t_start.tv_sec)*1000000LL + (t_end.tv_usec-t_start.tv_usec));
+	printf("Elapsed =    %12lld\n", (t_end.tv_sec-t_start.tv_sec)*1000000LL + (t_end.tv_usec-t_start.tv_usec));
 	return 0;
 }
 
