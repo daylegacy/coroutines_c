@@ -34,21 +34,6 @@
 		} \
 		clock_gettime(CLOCK_REALTIME, &t_start); \
 }while(0)
-#define switch_core_nt() \
-do { \
-	clock_gettime(CLOCK_REALTIME, &t_end); \
-	contexts_times[c_i] += (t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec; \
-	if ((t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec>1000000*(T/c_s)){ \
-		save = c_i; \
-		go_next_to_unfinished(); \
-		if(c_i!=save){ \
-			switch_cont_n[c_i]++; \
-			swapcontext(&contexts[save], &contexts[c_i]); \
-			c_i = save; \
-		} \
-	} \
-	clock_gettime(CLOCK_REALTIME, &t_start); \
-}while(0)
 #define handle_error(msg) \
    do { perror(msg); exit(EXIT_FAILURE); } while (0)
 typedef struct arr{
@@ -95,7 +80,7 @@ void sort(int * ptr, int len, int orgn_len) {
 				swapcontext(&contexts[c_i], &main_context);
 			}
 			while(c_ret_n<c_s){
-				switch_core_nt();
+				switch_core();
 			}
 		}
 		return;
@@ -123,7 +108,7 @@ void sort(int * ptr, int len, int orgn_len) {
 			swapcontext(&contexts[c_i], &main_context);
 		}
 		while(c_ret_n<c_s){
-			switch_core_nt();
+			switch_core();
 		}
 	}
 }
