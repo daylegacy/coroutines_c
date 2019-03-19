@@ -2,6 +2,6 @@
 .vscode/launch.json
 .vscode/c_cpp_properties.json
 example_swap.c
-sysprog/*
+sysprog
 *.txt
 f
