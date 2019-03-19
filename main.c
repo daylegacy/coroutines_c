@@ -32,6 +32,7 @@
 #define switch_core_nt() \
 	do { \
 		save = c_i; \
+		switch_cont_n[c_i]++; \
 		if(c_i+1<c_s){ \
 			c_i++; \
 			swapcontext(&contexts[save], &contexts[c_i]);} \
@@ -78,7 +79,7 @@ void sort(int * ptr, int len, int orgn_len) {
 	int pivot=0;switch_core();
 	int temp;switch_core();
 	pivot =  ptr[len / 2];switch_core();
-	if (len < 2) {switch_core();
+	if (len < 2) {
 		if(len == orgn_len){
 			c_ret_n++;
 			if(c_ret_n==c_s){
