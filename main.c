@@ -19,7 +19,7 @@
 			else{ c_i=0; } \
 		}while(coroutine_finished[c_i]); \
 	}while(0)
-#define switch_core() \
+#define switch_coro() \
 	do { \
 		clock_gettime(CLOCK_REALTIME, &t_end); \
 		contexts_times[c_i] += (t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec; \
@@ -69,10 +69,10 @@ void sort(int * ptr, int len, int orgn_len) {
 	clock_gettime(CLOCK_REALTIME, &t_start);
 	clock_gettime(CLOCK_REALTIME, &t_end);
 
-	int i=0, j=0;switch_core();
-	int pivot=0;switch_core();
-	int temp;switch_core();
-	pivot =  ptr[len / 2];switch_core();
+	int i=0, j=0;switch_coro();
+	int pivot=0;switch_coro();
+	int temp;switch_coro();
+	pivot =  ptr[len / 2];switch_coro();
 	if (len < 2) {
 		if(len == orgn_len){
 			c_ret_n++;
@@ -80,26 +80,26 @@ void sort(int * ptr, int len, int orgn_len) {
 				swapcontext(&contexts[c_i], &main_context);
 			}
 			while(c_ret_n<c_s){
-				switch_core();
+				switch_coro();
 			}
 		}
 		return;
 	}
-	for (i=0, j=len-1; ;i++,j--) {switch_core();
-		while (pivot>ptr[i]) {i++;switch_core();}
-		while (ptr[j]>pivot) {j--;switch_core();}
-		if (i>=j) break;switch_core();
-		temp = ptr[i];switch_core();
-		ptr[i] = ptr[j];switch_core();
-		ptr[j] =temp;switch_core();
+	for (i=0, j=len-1; ;i++,j--) {switch_coro();
+		while (pivot>ptr[i]) {i++;switch_coro();}
+		while (ptr[j]>pivot) {j--;switch_coro();}
+		if (i>=j) break;switch_coro();
+		temp = ptr[i];switch_coro();
+		ptr[i] = ptr[j];switch_coro();
+		ptr[j] =temp;switch_coro();
 	}
 	sort(ptr, i, orgn_len);
 	clock_gettime(CLOCK_REALTIME, &t_start);
-	switch_core();
+	switch_coro();
 
 	sort(ptr+i, len-i, orgn_len);
 	clock_gettime(CLOCK_REALTIME, &t_start);
-	switch_core();
+	switch_coro();
 
 	if(len == orgn_len){
 		c_ret_n++;
@@ -108,7 +108,7 @@ void sort(int * ptr, int len, int orgn_len) {
 			swapcontext(&contexts[c_i], &main_context);
 		}
 		while(c_ret_n<c_s){
-			switch_core();
+			switch_coro();
 		}
 	}
 }
