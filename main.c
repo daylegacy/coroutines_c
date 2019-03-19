@@ -12,34 +12,42 @@
 #include <time.h>
 
 #define STACK_SIZE 1024*1024*4
+#define go_next_to_unfinished() \
+	do{ \
+		do{ \
+			if(c_i+1<c_s){ c_i++; } \
+			else{ c_i=0; } \
+		}while(coroutine_finished[c_i]); \
+	}while(0)
 #define switch_core() \
 	do { \
 		clock_gettime(CLOCK_REALTIME, &t_end); \
 		contexts_times[c_i] += (t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec; \
-		save = c_i; \
 		if ((t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec>1000000*(T/c_s)){ \
-		switch_cont_n[c_i]++; \
-		if(c_i+1<c_s){ \
-			c_i++; \
-			swapcontext(&contexts[save], &contexts[c_i]);} \
-		else{ \
-			c_i=0; \
-			swapcontext(&contexts[save], &contexts[0]);} \
+			save = c_i; \
+			go_next_to_unfinished(); \
+			if(c_i!=save){ \
+				switch_cont_n[c_i]++; \
+				swapcontext(&contexts[save], &contexts[c_i]); \
+				c_i = save; \
+			} \
 		} \
 		clock_gettime(CLOCK_REALTIME, &t_start); \
-		c_i = save; \
 }while(0)
 #define switch_core_nt() \
-	do { \
+do { \
+	clock_gettime(CLOCK_REALTIME, &t_end); \
+	contexts_times[c_i] += (t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec; \
+	if ((t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec>1000000*(T/c_s)){ \
 		save = c_i; \
-		switch_cont_n[c_i]++; \
-		if(c_i+1<c_s){ \
-			c_i++; \
-			swapcontext(&contexts[save], &contexts[c_i]);} \
-		else{ \
-			c_i=0; \
-			swapcontext(&contexts[save], &contexts[0]);} \
-		c_i = save; \
+		go_next_to_unfinished(); \
+		if(c_i!=save){ \
+			switch_cont_n[c_i]++; \
+			swapcontext(&contexts[save], &contexts[c_i]); \
+			c_i = save; \
+		} \
+	} \
+	clock_gettime(CLOCK_REALTIME, &t_start); \
 }while(0)
 #define handle_error(msg) \
    do { perror(msg); exit(EXIT_FAILURE); } while (0)
@@ -53,6 +61,7 @@ ucontext_t main_context;
 ucontext_t * contexts;
 unsigned long long *  contexts_times;
 unsigned long long *  switch_cont_n;
+int * coroutine_finished;
 int c_i=0; //current context id
 int c_s=0; //number of contexts
 int c_ret_n=0;
@@ -109,6 +118,7 @@ void sort(int * ptr, int len, int orgn_len) {
 
 	if(len == orgn_len){
 		c_ret_n++;
+		coroutine_finished[c_i]=1;
 		if(c_ret_n==c_s){
 			swapcontext(&contexts[c_i], &main_context);
 		}
@@ -139,16 +149,18 @@ int main(int argc, char const *argv[]) {
 
 	if(argc<3){
 
-		printf("Usage :./f filename ...\n");
+		printf("Usage :./f T filename ...\n");
 		return 0;
 	}
 	arr *list_of_arr=malloc(len*sizeof(arr));
 	contexts=malloc(len*sizeof(ucontext_t));
 	contexts_times=malloc(len*sizeof(unsigned long long));
 	switch_cont_n = malloc(len*sizeof(unsigned long long));
+	coroutine_finished = malloc(len*sizeof(int));
 	for(int i=0;i<len;i++){
 		contexts_times[i] = 0;
 		switch_cont_n[i] = 0;
+		coroutine_finished[i] =0;
 	}
 	T = atof(argv[1]);
 	for(int i=0;i<len;i++){
@@ -204,6 +216,7 @@ int main(int argc, char const *argv[]) {
 	free(contexts);
 	free(contexts_times);
 	free(switch_cont_n);
+	free(coroutine_finished);
 	printf("Elapsed =    %lld\n", (t_end.tv_sec-t_start.tv_sec)*1000000LL + (t_end.tv_usec-t_start.tv_usec));
 	return 0;
 }
