@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <time.h>
 
-#define STACK_SIZE 1024*1024*4;
+#define STACK_SIZE 1024*1024*4
 #define switch_core() \
 	do { \
 		clock_gettime(CLOCK_REALTIME, &t_end); \
