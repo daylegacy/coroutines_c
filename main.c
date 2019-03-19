@@ -12,7 +12,7 @@
 #include <time.h>
 
 #define STACK_SIZE 1024*1024*4
-#define go_next_to_unfinished() \
+#define goto_unfinished() \
 	do{ \
 		do{ \
 			if(c_i+1<c_s){ c_i++; } \
@@ -25,7 +25,7 @@
 		contexts_times[c_i] += (t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec; \
 		if ((t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec>1000000*(T/c_s)){ \
 			save = c_i; \
-			go_next_to_unfinished(); \
+			goto_unfinished(); \
 			if(c_i!=save){ \
 				switch_cont_n[c_i]++; \
 				swapcontext(&contexts[save], &contexts[c_i]); \
