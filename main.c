@@ -34,6 +34,19 @@
 		} \
 		clock_gettime(CLOCK_REALTIME, &t_start); \
 }while(0)
+#define finish_others() \
+	do{ \
+		if(len == orgn_len){ \
+			c_ret_n++; \
+			coroutine_finished[c_i]=1; \
+			if(c_ret_n==c_s){ \
+				swapcontext(&contexts[c_i], &main_context); \
+			} \
+			while(c_ret_n<c_s){ \
+				switch_coro(); \
+			} \
+		} \
+	}while(0)
 #define handle_error(msg) \
    do { perror(msg); exit(EXIT_FAILURE); } while (0)
 typedef struct arr{
@@ -52,37 +65,18 @@ int c_s=0; //number of contexts
 int c_ret_n=0;
 double T=0;//target latency
 int min(arr * list_of_arr, int size, int * ret);
-
-void merge(arr * list_of_arr, int size , FILE * fp){
-	int a;
-	//printf("erkguf \n");
-    while(min(list_of_arr, size, &a)){
-		//printf("%d ", a);
-		fprintf(fp, "%d\n", a);
-	}
-}
+void merge(arr * list_of_arr, int size , FILE * fp);
 
 void sort(int * ptr, int len, int orgn_len) {
-	int save=0;
 	struct timespec t_start;
 	struct timespec t_end;
 	clock_gettime(CLOCK_REALTIME, &t_start);
-	clock_gettime(CLOCK_REALTIME, &t_end);
-
+	int save=0;switch_coro();
 	int i=0, j=0;switch_coro();
-	int pivot=0;switch_coro();
 	int temp;switch_coro();
-	pivot =  ptr[len / 2];switch_coro();
+	int pivot =  ptr[len / 2];switch_coro();
 	if (len < 2) {
-		if(len == orgn_len){
-			c_ret_n++;
-			if(c_ret_n==c_s){
-				swapcontext(&contexts[c_i], &main_context);
-			}
-			while(c_ret_n<c_s){
-				switch_coro();
-			}
-		}
+		finish_others();
 		return;
 	}
 	for (i=0, j=len-1; ;i++,j--) {switch_coro();
@@ -94,23 +88,9 @@ void sort(int * ptr, int len, int orgn_len) {
 		ptr[j] =temp;switch_coro();
 	}
 	sort(ptr, i, orgn_len);
-	clock_gettime(CLOCK_REALTIME, &t_start);
-	switch_coro();
-
 	sort(ptr+i, len-i, orgn_len);
 	clock_gettime(CLOCK_REALTIME, &t_start);
-	switch_coro();
-
-	if(len == orgn_len){
-		c_ret_n++;
-		coroutine_finished[c_i]=1;
-		if(c_ret_n==c_s){
-			swapcontext(&contexts[c_i], &main_context);
-		}
-		while(c_ret_n<c_s){
-			switch_coro();
-		}
-	}
+	finish_others();
 }
 
 static void *
@@ -232,4 +212,11 @@ int min(arr * list_of_arr, int size, int * ret){
 	list_of_arr[s].pos++;
 	*ret = min;
 	return 1;
+}
+
+void merge(arr * list_of_arr, int size , FILE * fp){
+	int a;
+  while(min(list_of_arr, size, &a)){
+		fprintf(fp, "%d\n", a);
+	}
 }
