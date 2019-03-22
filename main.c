@@ -15,15 +15,24 @@
 #define goto_unfinished() \
 	do{ \
 		do{ \
-			if(c_i+1<c_s){ c_i++; } \
-			else{ c_i=0; } \
+			c_i=(c_i+1)%c_s; \
 		}while(coroutine_finished[c_i]); \
 	}while(0)
+#define switch_coro_fast() \
+	do { \
+		save = c_i; \
+		goto_unfinished(); \
+		if(c_i!=save){ \
+			switch_cont_n[c_i]++; \
+			swapcontext(&contexts[save], &contexts[c_i]); \
+			c_i = save; \
+		} \
+}while(0)
 #define switch_coro() \
 	do { \
 		clock_gettime(CLOCK_REALTIME, &t_end); \
 		contexts_times[c_i] += (t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec; \
-		if ((t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec>1000000*(T/c_s)){ \
+		if ((t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec>1000*(T/c_s)){ \
 			save = c_i; \
 			goto_unfinished(); \
 			if(c_i!=save){ \
@@ -43,7 +52,7 @@
 				swapcontext(&contexts[c_i], &main_context); \
 			} \
 			while(c_ret_n<c_s){ \
-				switch_coro(); \
+				switch_coro_fast(); \
 			} \
 		} \
 	}while(0)
@@ -63,7 +72,7 @@ int * coroutine_finished;
 int c_i=0; //current context id
 int c_s=0; //number of contexts
 int c_ret_n=0;
-double T=0;//target latency
+double T=0;//target latency microsec
 int min(arr * list_of_arr, int size, int * ret);
 void merge(arr * list_of_arr, int size , FILE * fp);
 
@@ -148,8 +157,10 @@ int main(int argc, char const *argv[]) {
 		}
 		fclose(fp);
 	}
+	void ** save_stacks= malloc(len*sizeof(void *));
 	for(int i=len-1;i>=0;i--){
 		contexts[i].uc_stack.ss_sp=allocate_stack();
+		save_stacks[i] = contexts[i].uc_stack.ss_sp;
 		contexts[i].uc_stack.ss_size=STACK_SIZE;
 		if (getcontext(&contexts[i]) == -1)
 			handle_error("getcontext");
@@ -175,8 +186,9 @@ int main(int argc, char const *argv[]) {
 	fclose(fp);
 	for(int i=0;i<len;i++){
 		free(list_of_arr[i].ptr);
-		free(contexts[i].uc_stack.ss_sp);
+		free(save_stacks[i]);
 	}
+	free(save_stacks);
 	free(list_of_arr);
 	free(contexts);
 	free(contexts_times);
