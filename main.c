@@ -159,11 +159,11 @@ int main(int argc, char const *argv[]) {
 	}
 	void ** save_stacks= malloc(len*sizeof(void *));
 	for(int i=len-1;i>=0;i--){
+		if (getcontext(&contexts[i]) == -1)
+			handle_error("getcontext");
 		contexts[i].uc_stack.ss_sp=allocate_stack();
 		save_stacks[i] = contexts[i].uc_stack.ss_sp;
 		contexts[i].uc_stack.ss_size=STACK_SIZE;
-		if (getcontext(&contexts[i]) == -1)
-			handle_error("getcontext");
 		if(i==len-1)contexts[i].uc_link =&main_context;
 		else contexts[i].uc_link =&contexts[i+1];
 		makecontext(&contexts[i], (void (*)(void))sort, 3, list_of_arr[i].ptr, list_of_arr[i].len, list_of_arr[i].len);
