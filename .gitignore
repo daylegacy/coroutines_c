@@ -5,3 +5,4 @@ example_swap.c
 sysprog
 *.txt
 f
+.vscode
