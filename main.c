@@ -228,6 +228,7 @@ int min(arr * list_of_arr, int size, int * ret){
 	return 1;
 }
 
+
 void merge(arr * list_of_arr, int size , FILE * fp){
 	int a;
   while(min(list_of_arr, size, &a)){
