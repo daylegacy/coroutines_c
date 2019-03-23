@@ -1,6 +1,4 @@
-//#define _XOPEN_SOURCE /* Mac compatibility. */
-//#define _POSIX_C_SOURCE>=199309L
-//gcc main.c -std=gnu11 -o a.out
+#define _XOPEN_SOURCE /* Mac compatibility. */
 //./a.out 0.001 test11.txt test22.txt test33.txt
 #include <ucontext.h>
 #include <stdio.h>
