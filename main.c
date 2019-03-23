@@ -31,8 +31,9 @@
 #define switch_coro() \
 	do { \
 		clock_gettime(CLOCK_REALTIME, &t_end); \
-		contexts_times[c_i] += (t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec; \
-		if ((t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec>1000*(T/c_s)){ \
+		int delta = (t_end.tv_sec-t_start.tv_sec)*1000000000LLU + t_end.tv_nsec-t_start.tv_nsec; \
+		if (delta>1000*(T/c_s)){ \
+			contexts_times[c_i] += delta; \
 			save = c_i; \
 			goto_unfinished(); \
 			if(c_i!=save){ \
@@ -40,8 +41,8 @@
 				swapcontext(&contexts[save], &contexts[c_i]); \
 				c_i = save; \
 			} \
+			clock_gettime(CLOCK_REALTIME, &t_start); \
 		} \
-		clock_gettime(CLOCK_REALTIME, &t_start); \
 }while(0)
 #define finish_others() \
 	do{ \
